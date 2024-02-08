@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LED Controller</title>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const ledContainer = document.getElementById('ledButtons');
+      for (let i = 0; i < 14; i++) {
+        const button = document.createElement('button');
+        button.innerText = `LED ${i}`;
+        button.style.color = "white"
+        button.id = `ledButton${i}`;
+
+        button.onclick = function () { setLEDColor(i); };
+        ledContainer.appendChild(button);
+      }
+      updateButtonColors();
+    });
+
+    // const ip = '172.20.10.10'; // Replace with your server's IP address
+    const ip = "localhost"
+    const port = '80'; // Replace with your Flask server's port, e.g., 80
+
+    function updateButtonColors() {
+      const url = `http://${ip}:${port}/ledState`;
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          data.forEach(led => {
+            const button = document.getElementById(`ledButton${led.index}`);
+            if (button != null) {
+              button.style.backgroundColor = led.color;
+            }
+            // console.log(button);
+          });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+
+    function setLEDColor(index) {
+      const url = `http://${ip}:${port}/led?index=${index}&color=${colorPicker.value.substring(1)}`;
+      fetch(url)
+        .then(response => response.text())
+        .then(data => {
+          console.log(data); // Alert with response from server
+          updateButtonColors();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+
+    let interval = setInterval(updateButtonColors, 500)
+  </script>
+</head>
+
+<body>
+  <h2>Choose LED Color</h2>
+  <input type="color" id="colorPicker" value="#ff0000">
+  <div id="ledButtons">
+    <h3>Control LEDs</h3>
+    <!-- Buttons will be added here by JavaScript -->
+  </div>
+</body>
+
+</html>
